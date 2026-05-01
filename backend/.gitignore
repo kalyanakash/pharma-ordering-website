@@ -1,0 +1,9 @@
+# Ignore local secrets file - never push this
+application-local.properties
+
+# Ignore build output
+target/
+
+# Ignore uploads folder (too large for git)
+uploads/
+src/main/resources/static/uploads/

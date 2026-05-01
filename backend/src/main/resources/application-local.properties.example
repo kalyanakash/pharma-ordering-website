@@ -1,0 +1,33 @@
+# ============================================================
+# TEMPLATE — copy this to application-local.properties
+# and fill in your real values. Never commit the real file.
+# ============================================================
+
+# Database
+spring.datasource.username=root
+spring.datasource.password=your_mysql_password
+
+# JWT Secret (use a long random string in production)
+jwt.secret=replace_with_64_char_base64_encoded_secret
+
+# Twilio SMS
+twilio.account.sid=your_twilio_account_sid
+twilio.auth.token=your_twilio_auth_token
+twilio.phone.number=+1234567890
+
+# Email (Gmail SMTP)
+spring.mail.username=your_email@gmail.com
+spring.mail.password=your_gmail_app_password
+
+# Google Gemini AI
+spring.ai.google.genai.api-key=your_gemini_api_key
+
+# Groq AI
+groq.api-key=your_groq_api_key
+
+# Razorpay
+razorpay.key.id=rzp_test_your_key_id
+razorpay.key.secret=your_razorpay_key_secret
+
+# CORS — uncomment and set your deployed frontend URL when deploying
+# app.cors.allowed-origins=https://your-frontend.com,http://localhost:5173

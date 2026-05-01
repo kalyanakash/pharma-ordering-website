@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"}, maxAge = 3600)
 @RestController
 @RequestMapping("/api/payment")
 public class PaymentController {
@@ -156,24 +156,47 @@ public class PaymentController {
 
     /**
      * Called when payment fails on the frontend.
+     * Only the order owner can mark their own order as failed.
      */
     @PostMapping("/failure")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> handlePaymentFailure(@RequestBody java.util.Map<String, Object> body) {
         Long orderId = body.get("orderId") != null ? Long.valueOf(body.get("orderId").toString()) : null;
         String rzpOrderId = (String) body.get("razorpayOrderId");
+
         if (orderId != null) {
+            UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
+                    .getAuthentication().getPrincipal();
+            Order order = orderRepository.findById(orderId).orElse(null);
+            // Only allow the owner to report failure for their own order
+            if (order == null || !order.getUserId().equals(userDetails.getId())) {
+                return ResponseEntity.status(403).body(new MessageResponse("Access denied"));
+            }
             markPaymentFailed(orderId, rzpOrderId);
         }
         return ResponseEntity.ok(new MessageResponse("Payment failure recorded."));
     }
 
     /**
-     * Get payment details for an order (user can view their own).
+     * Get payment details for an order.
+     * Users can only view their own order's payment; admins can view any.
      */
     @GetMapping("/order/{orderId}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> getPaymentByOrder(@PathVariable Long orderId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+            // Regular users may only access their own order's payment
+            Order order = orderRepository.findById(orderId).orElse(null);
+            if (order == null || !order.getUserId().equals(userDetails.getId())) {
+                return ResponseEntity.status(403).body(new MessageResponse("Access denied"));
+            }
+        }
+
         return paymentRepository.findByOrder_Id(orderId)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

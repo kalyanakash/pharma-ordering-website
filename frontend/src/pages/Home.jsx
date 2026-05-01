@@ -538,7 +538,7 @@ const Home = () => {
                           <div className="relative overflow-hidden flex-shrink-0" style={{height: '400px', minHeight: '400px', maxHeight: '400px'}}>
                             {medicine.imageUrl ? (
                               <img
-                                src={`http://localhost:8081${medicine.imageUrl}`}
+                                src={medicine.imageUrl}
                                 alt={medicine.name}
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 onError={(e) => {
